@@ -42,26 +42,9 @@ app.get('/new/',function(req,res){
 });
 
 
-app.get('/:id', function (req, res) {
-    fs.readFile(jsonDataFile, function(err, data) {
-        if (err) {
-            res.send(err);
-            return;
-        }
-        var jsonData = JSON.parse(data);
-        if (util.isArray(jsonData['urls'])) {
-            var url = jsonData['urls'].findUrlById(req.params.id);
-            if (url) {
-                res.redirect(url);
-                return;
-            }
-        }
-        res.send({"error":"No short url found for given input"});
-    });
 
-});
 
-app.get('/new/:url', function (req, res) {
+app.get('/new/:url(*)', function (req, res) {
 
     var regex = /^((http|https):\/\/)?([\w!@#$%^&*()-=_\+]+\.[^\/])+[\w!@#$%^&*()-=_\+]+$/ig;
     var url = req.params.url;
@@ -87,8 +70,6 @@ app.get('/new/:url', function (req, res) {
                 var newId = jsonData['urls'].length;
                 newId = newId > preId ? newId : (preId+1);
                 jsonData['urls'].push([newId, url]);
-
-                console.log(id,preId,newId);
                 res.send( { "original_url": url, "short_url": req.protocol + '://' + req.get('host') + '/' + newId} );
             }
         } else {
@@ -107,8 +88,24 @@ app.get('/new/:url', function (req, res) {
     });
 });
 
+app.get('/:id', function (req, res) {
+    fs.readFile(jsonDataFile, function(err, data) {
+        if (err) {
+            res.send(err);
+            return;
+        }
+        var jsonData = JSON.parse(data);
+        if (util.isArray(jsonData['urls'])) {
+            var url = jsonData['urls'].findUrlById(req.params.id);
+            if (url) {
+                res.redirect(url);
+                return;
+            }
+        }
+        res.send({"error":"No short url found for given input"});
+    });
 
-
+});
 
 
 app.listen(app.get('port'), function() {
